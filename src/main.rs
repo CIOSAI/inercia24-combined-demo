@@ -16,6 +16,9 @@ fn main() {
             ImageConfig {
                 clear: ClearConfig::Color(0.0,0.0,0.0)
             },
+            ImageConfig {
+                clear: ClearConfig::Color(0.0,0.0,0.0)
+            },
         ]),
         passes: Vec::from([
             Pass {
@@ -23,6 +26,12 @@ fn main() {
                 dispatches: DispatchConfig::FullScreen,
                 input_resources: Vec::from([]),
                 output_resources: Vec::from([ 0 ]),
+            },
+            Pass {
+                shader: "src/shaders/post1.comp".to_string(),
+                dispatches: DispatchConfig::FullScreen,
+                input_resources: Vec::from([ 0 ]),
+                output_resources: Vec::from([ 1 ]),
             },
         ])
     };
