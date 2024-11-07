@@ -263,10 +263,11 @@ void main()
 
     if( p.x < 100 ){
         seed = uint(p.y*R.x+p.x);
-        vec3 pos = hash_v3()*2.-1.;
-        pos.xy *= rot(time*.13);
-        pos.xz *= rot(time*.15);
-        pos*=2.;
+        vec3 pos = (hash_v3()*2.-1.)*2.;
+        for(int i=0; i<100; i++){
+            if(map(pos,time)<.75) { break; }
+            pos = (hash_v3()*2.-1.)*2.;
+        }
         
         for(int i=0; i<50; i++)
         {
@@ -274,7 +275,7 @@ void main()
             if (d<.001) { break; }
             pos += nor(pos,time)*d;
             float perc = float(i)/50.0;
-            vec3 col = vec3(float(i)*.01+.4,.5-d,pow(1.-d,30.));
+            vec3 col = vec3(float(i)*.01+.4,d*.2+.8,pow(d,5.)+.3);
             col = hsv2rgb(col);
             store_pixel(proj_p(pos+vec3(0,0,8)), col);
         }
