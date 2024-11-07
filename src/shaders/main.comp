@@ -37,10 +37,50 @@ uint hashi( uint x){
 #define hash_v2()  vec2(hash_f(),hash_f())
 #define hash_v3()  vec3(hash_f(),hash_f(),hash_f())
 #define hash_v4()  vec3(hash_f(),hash_f(),hash_f(),hash_f())
+#define hash_v3_s(s)  ( vec3(hash_f_s(s),hash_f_s(hashi(s)),hash_f_s(hashi(hashi(s)))) )
+
+// https://www.shadertoy.com/view/XlXcW4
+vec3 hash3f( vec3 s ) {
+  uvec3 r = floatBitsToUint( s );
+  r = ( ( r >> 16u ) ^ r.yzx ) * 1111111111u;
+  r = ( ( r >> 16u ) ^ r.yzx ) * 1111111111u;
+  r = ( ( r >> 16u ) ^ r.yzx ) * 1111111111u;
+  return vec3( r ) / float( -1u );
+}
 
 vec2 sample_disk(){
     vec2 r = hash_v2();
     return vec2(sin(r.x*tau),cos(r.x*tau))*sqrt(r.y);
+}
+
+uint seed_gen(vec3 p){
+    return uint(p.x+66341.)*666562+uint(p.y+54324.)*3554+uint(p.z+61441.);
+}
+
+vec3 noise(vec3 p){
+    vec3 bl_back = hash3f(floor(p));
+    vec3 br_back = hash3f(floor(p)+vec3(1,0,0));
+    vec3 tr_back = hash3f(floor(p)+vec3(1,1,0));
+    vec3 tl_back = hash3f(floor(p)+vec3(0,1,0));
+    vec3 bl_front = hash3f(floor(p)+vec3(0,0,1));
+    vec3 br_front = hash3f(floor(p)+vec3(1,0,1));
+    vec3 tr_front = hash3f(floor(p)+vec3(1,1,1));
+    vec3 tl_front = hash3f(floor(p)+vec3(0,1,1));
+    return 
+    mix(
+    mix(
+    mix(bl_back, br_back, smoothstep(0.,1.,fract(p.x))),
+    mix(tl_back, tr_back, smoothstep(0.,1.,fract(p.x))),
+    smoothstep(0.,1.,fract(p.y))
+    ),
+    mix(
+    mix(bl_front, br_front, smoothstep(0.,1.,fract(p.x))),
+    mix(tl_front, tr_front, smoothstep(0.,1.,fract(p.x))),
+    smoothstep(0.,1.,fract(p.y))
+    ),
+    smoothstep(0.,1.,fract(p.z))
+    )
+    ;
 }
 
 // point projection
@@ -48,7 +88,7 @@ ivec2 proj_p(vec3 p){
   p *= 0.6;
   
   // depth of field
-  p.xy += sample_disk() * abs(p.z - 5.)*0.01;
+  p.xy += sample_disk() * abs(p.z - 5.)*0.04;
   
   // convert point to ivec2. From 0 to resolution.xy
   ivec2 q = ivec2((p.xy + vec2(R.x/R.y,1)*0.5)*vec2(R.y/R.x,1)*R);
@@ -171,6 +211,9 @@ float letter(vec3 p, int ascii)
 float map(vec3 p, float t)
 {
     // { CIOSAI letters }
+        // p.xy *= rot(sin(t*.3)*.5);
+        // p.zx *= rot(cos(t*.5)*.5);
+        // p.yz *= rot(sin(t*.7));
         // vec3 q = p*8.;
 
         // float accum = 9999.;
@@ -183,13 +226,19 @@ float map(vec3 p, float t)
     // { CIOSAI letters }
 
     // { rotating cube }
-        p.xy *= rot(t*.3);
-        p.zx *= rot(t*.5);
-        p.yz *= rot(t*.7);
-        vec3 q = abs(p);
+        // p.xy *= rot(t*.3);
+        // p.zx *= rot(t*.5);
+        // p.yz *= rot(t*.7);
+        // vec3 q = abs(p);
 
-        return abs(max(max(q.x,q.y),q.z)-(1.-fract(t))*.2-.3);
+        // return abs(max(max(q.x,q.y),q.z)-(1.-fract(t))*.2-.3);
     // { rotating cube }
+
+    // { terraine } 
+        p.zy *= rot(.4);
+        vec3 q = p*2.+vec3(0,0,t);
+        return abs(p.y-.2-noise(q+noise(q)*.5).x*.2);
+    // { terraine } 
 }
 
 vec3 nor(vec3 p, float t)
