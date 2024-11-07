@@ -1,0 +1,11 @@
+[package]
+name = "inercia24"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+
+kiyo = { git = "https://github.com/angelocarly/kiyo.git" }
+cen = "0.0.3"

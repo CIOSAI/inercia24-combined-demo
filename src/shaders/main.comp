@@ -1,0 +1,233 @@
+#version 450
+
+/*
+ * Kiyo data
+ * - WORKGROUP_SIZE and NUM_IMAGES are provided by the engine
+ */
+
+layout ( local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1 ) in;
+layout( binding = 0, rgba8 ) uniform image2D images[NUM_IMAGES];
+layout( push_constant ) uniform PushConstants
+{
+    float time;
+    int in_image;
+    int out_image;
+} constants;
+
+/*
+ * User data
+ */
+
+#define R vec2(imageSize( images[ constants.out_image ] ))
+
+#define pi acos(-1.)
+#define tau (acos(-1.)*2.)
+
+#define rot(a) mat2(cos(a),-sin(a),sin(a),cos(a))
+
+// hashes
+uint seed = 12512;
+uint hashi( uint x){
+    x ^= x >> 16;x *= 0x7feb352dU;x ^= x >> 15;x *= 0x846ca68bU;x ^= x >> 16;
+    return x;
+}
+
+#define hash_f_s(s)  ( float( hashi(uint(s)) ) / float( 0xffffffffU ) )
+#define hash_f()  ( float( seed = hashi(seed) ) / float( 0xffffffffU ) )
+#define hash_v2()  vec2(hash_f(),hash_f())
+#define hash_v3()  vec3(hash_f(),hash_f(),hash_f())
+#define hash_v4()  vec3(hash_f(),hash_f(),hash_f(),hash_f())
+
+vec2 sample_disk(){
+    vec2 r = hash_v2();
+    return vec2(sin(r.x*tau),cos(r.x*tau))*sqrt(r.y);
+}
+
+// point projection
+ivec2 proj_p(vec3 p){
+  p *= 0.6;
+  
+  // depth of field
+  p.xy += sample_disk() * abs(p.z - 5.)*0.01;
+  
+  // convert point to ivec2. From 0 to resolution.xy
+  ivec2 q = ivec2((p.xy + vec2(R.x/R.y,1)*0.5)*vec2(R.y/R.x,1)*R);
+  if(any(greaterThan(q, ivec2(R))) || any(lessThan(q, ivec2(0)))){
+      q = ivec2(-1);
+  }
+  return q;
+}
+
+
+void store_pixel(ivec2 px_coord, vec3 col){
+  // colour quantized to integer.
+  ivec3 quant_col = ivec3(col * 1000);
+  // no clue why it wants ivec4() here...
+  imageStore(images[ constants.out_image ], px_coord, vec4(col,1)); 
+}
+
+// void add_to_pixel(ivec2 px_coord, vec3 col){
+//   // colour quantized to integer.
+//   ivec3 quant_col = ivec3(col * 1000);
+//   imageAtomicAdd(images[ constants.out_image ], px_coord, vec4(col,1)); 
+// }
+
+vec3 read_pixel(ivec2 px_coord){
+  return imageLoad(images[ constants.in_image ], px_coord).rgb; 
+}
+
+vec3 hsv2rgb(vec3 c)
+{
+    vec4 K = vec4(1.0, 2.0 / 3.0, 1.0 / 3.0, 3.0);
+    vec3 p = abs(fract(c.xxx + K.xyz) * 6.0 - K.www);
+    return c.z * mix(K.xxx, clamp(p - K.xxx, 0.0, 1.0), c.y);
+}
+
+vec3 rgb2hsv(vec3 c)
+{
+    vec4 K = vec4(0.0, -1.0 / 3.0, 2.0 / 3.0, -1.0);
+    vec4 p = mix(vec4(c.bg, K.wz), vec4(c.gb, K.xy), step(c.b, c.g));
+    vec4 q = mix(vec4(p.xyw, c.r), vec4(c.r, p.yzx), step(p.x, c.r));
+
+    float d = q.x - min(q.w, q.y);
+    float e = 1.0e-10;
+    return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
+}
+
+//          ↓ try change this around (0.-.5)
+const float B=.3; //bevel amount
+const mat2 SEGMENTS[] = mat2[](
+    //                                  0x.....0
+    mat2(vec2(-1,1.-B),vec2(-1,-1)),    //  left
+    mat2(vec2(B-1.,1),vec2(.5,1)),      //  top(l)
+    mat2(vec2(.5,1),vec2(1,1)),         //  top(r)
+    mat2(vec2(1,1),vec2(1,0)),          //  right(t)
+    //                                  0x....0.
+    mat2(vec2(1,0),vec2(1,B-1.)),       //  right(b)
+    mat2(vec2(1.-B,-1),vec2(-1,-1)),    //  bottom
+    mat2(vec2(0,1),vec2(0,-1)),         //  vertical
+    mat2(vec2(.5,0),vec2(-1,0)),        //  horizontal(l)
+    //                                  0x...0..
+    mat2(vec2(.5,0),vec2(1,0)),         //  horizontal(r)
+    mat2(vec2(.5,1),vec2(.5,0)),        //  B R
+    mat2(vec2(.5,1),vec2(1,0)),         //  D
+    mat2(vec2(B-1.,1),vec2(1.-B,-1)),   //  N
+    //                                  0x..0...
+    mat2(vec2(-1,1.-B),vec2(1.,B-1.)),  //  S
+    mat2(vec2(-1,1.-B),vec2(1.-B,-1.)), //  V
+    mat2(vec2(1,1),vec2(-1,-1)),        //  Z
+    mat2(vec2(1,1),vec2(0,0)),          //  Y K tr
+    //                                  0x.0....
+    mat2(vec2(-1,1.-B),vec2(0,0)),      //  Y tl
+    mat2(vec2(0,0),vec2(0,-1)),         //  vertical(b)
+    mat2(vec2(1,1),vec2(-1,-1)),        //  X Z tr bl diag
+    mat2(vec2(-1,0),vec2(-1,-1)),       //  left(b)
+    //                                  0x0.....
+    mat2(vec2(-1,1.-B),vec2(-1,0)),     //  left(t)
+    mat2(vec2(0,-.99),vec2(0,-1)),      //  dot
+    mat2(vec2(0,1),vec2(0,0)),          //  vertical(t)
+    //                                  FROM CONTEXT
+    mat2(vec2(-1,1.-B),vec2(B-1.,1)),   //  bevel tl
+    mat2(vec2(1,B-1.),vec2(1.-B,-1))    //  bevel br
+);  const int BEVEL_TL=SEGMENTS.length()-2, BEVEL_BR=SEGMENTS.length()-1;
+const int font[] = int[](
+    0x00103F,0x000040,0x0801AE,0x0001BE,0x100198,
+    0x1001B6,0x0001B1,0x00001E,0x0001BF,0x10019E,
+    0x000000,0x000000,0x000000,0x000000,0x000000, //yet to be decided
+    0x208006,0x600000,
+    0x00019F,0x0003B3,0x000027,0x000433,0x0000A7,0x000087,
+    0x000137,0x000199,0x000066,0x00003E,0x008191,0x000021,
+    0x00005F,0x000819,0x00003F,0x00018F,0x02003F,0x000393,
+    0x001026,0x000046,0x000039,0x002018,0x000079,0x004800,
+    0x038000,0x004026
+);
+int ascii_to_bitmask(int i){
+    int l=font[i-48];
+    if((l&0x13813)!=0) l+= 1<<BEVEL_TL;
+    if((l&0x03830)!=0) l+= 1<<BEVEL_BR;
+    return l;
+}
+
+float sdSegment( in vec2 p, in vec2 a, in vec2 b )
+{
+    vec2 pa = p-a, ba = b-a;
+    float h = clamp( dot(pa,ba)/dot(ba,ba), 0.0, 1.0 );
+    return length( pa - ba*h );
+}
+float letter(vec3 p, int ascii)
+{
+    float accum=9999.;
+    for(int j=0;j<SEGMENTS.length();j++){
+        if((ascii_to_bitmask(ascii)&(1<<j))!=0){
+            float seg = sdSegment(vec2(p.x,-p.y),SEGMENTS[j][0],SEGMENTS[j][1]);
+            float plane = abs(p.z-1.);
+            accum=min(accum,abs(max(seg,plane)-.1));
+        }
+    }
+    
+    return accum;
+}
+
+float map(vec3 p, float t)
+{
+    // { CIOSAI letters }
+        // vec3 q = p*8.;
+
+        // float accum = 9999.;
+        // int text[] = {67,73,79,83,65,73};
+        // for(int i=0; i<6; i++){
+        //     vec3 off = vec3((float(i)-2.5)*3.,0,0);
+        //     accum = min(accum,abs(letter(q-off, text[i])-.2));
+        // }
+        // return accum*.4;
+    // { CIOSAI letters }
+
+    // { rotating cube }
+        p.xy *= rot(t*.3);
+        p.zx *= rot(t*.5);
+        p.yz *= rot(t*.7);
+        vec3 q = abs(p);
+
+        return abs(max(max(q.x,q.y),q.z)-(1.-fract(t))*.2-.3);
+    // { rotating cube }
+}
+
+vec3 nor(vec3 p, float t)
+{
+    return normalize(vec3(map(p-vec3(.001,0,0), t)-map(p+vec3(.001,0,0), t),
+                          map(p-vec3(0,.001,0), t)-map(p+vec3(0,.001,0), t),
+                          map(p-vec3(0,0,.001), t)-map(p+vec3(0,0,.001), t)));
+}
+
+void main()
+{
+    ivec2 p = ivec2( gl_GlobalInvocationID.xy );
+    ivec2 screenSize = imageSize( images[ constants.out_image ] );
+    if( p.x > screenSize.x || p.y > screenSize.y )
+    {
+        return;
+    }
+
+    vec2 uv = (vec2(p) - .5*R)/R.y;
+
+    float time = constants.time*2.;
+
+    if( p.x < 100 ){
+        seed = uint(p.y*R.x+p.x);
+        vec3 pos = hash_v3()*2.-1.;
+        pos.xy *= rot(time*.13);
+        pos.xz *= rot(time*.15);
+        pos*=2.;
+        
+        for(int i=0; i<50; i++)
+        {
+            float d = map(pos,time)*.3;
+            if (d<.001) { break; }
+            pos += nor(pos,time)*d;
+            float perc = float(i)/50.0;
+            vec3 col = vec3(float(i)*.01+.4,.5-d,pow(1.-d,30.));
+            col = hsv2rgb(col);
+            store_pixel(proj_p(pos+vec3(0,0,8)), col);
+        }
+    }
+}
