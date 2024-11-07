@@ -150,7 +150,7 @@ vec2 glitcher( vec2 p )
 
     seed = uint((462.+i_uv.y)*332.+(i_uv.x+325)*38 - t*4.);
     if(hash_f()<.01){
-        i_uv = floor((hash_v2()*2.-1.)*scale*density);
+        i_uv = floor((hash_v2()*2.-1.)*scale*floor(density*.5));
     }
 
     return (i_uv+f_uv)/scale/density;
