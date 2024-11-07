@@ -14,10 +14,10 @@ fn main() {
     let config = DrawConfig {
         images: Vec::from([
             ImageConfig {
-                clear: ClearConfig::Color(0.0,0.0,0.0)
+                clear: ClearConfig::Color(1.0,1.0,1.0)
             },
             ImageConfig {
-                clear: ClearConfig::Color(0.0,0.0,0.0)
+                clear: ClearConfig::None
             },
         ]),
         passes: Vec::from([
