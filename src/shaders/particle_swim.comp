@@ -134,6 +134,16 @@ vec3 rgb2hsv(vec3 c)
     return vec3(abs(q.z + (q.w - q.y) / (6.0 * d + e)), d / (q.x + e), q.x);
 }
 
+vec3 fbm(vec3 p)
+{
+    float retain = .4;
+    vec3 acc = p;
+    for(int i=0; i<4; i++){
+        acc = noise(acc*float(1+i)*1.4) * pow(retain,float(i));
+    }
+    return acc;
+}
+
 void main()
 {
     ivec2 p = ivec2( gl_GlobalInvocationID.xy );
@@ -161,32 +171,56 @@ void main()
         // { morphing astroid }
 
         // { vertex }
-            float time = constants.time*.6;
-            vec3 pos = vec3(hash_v2()*2.-1.,1.);
+            // float time = constants.time*.6;
+            // vec3 pos = vec3(hash_v2()*2.-1.,1.);
 
-            pos.xy *= 2.;
-            vec3 i_pos=vec3(round(pos.xy*2.),pos.z);
-            vec3 i_nb=i_pos;
-            i_nb.xy += vec2(step(.5, hash_f()), step(.5, hash_f()));
+            // float density = 3.;
 
-            float noise_freq = 1.;
-            float wave_speed = 1.;
-            float wave_amp = .6;
+            // pos.xy *= 2.;
+            // vec3 i_pos=vec3(round(pos.xy*density),pos.z);
+            // vec3 i_nb=i_pos;
+            // i_nb.xy += vec2(step(.5, hash_f()), step(.5, hash_f()));
 
-            i_pos.z += noise(i_pos*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
-            i_nb.z += noise(i_nb*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
+            // float noise_freq = .1;
+            // float wave_speed = 1.;
+            // float wave_amp = 12.;
 
-            vec3 neighbor = (i_nb/2.).xzy;
-            pos = (i_pos/2.).xzy;
+            // i_pos.z += fbm(i_pos*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
+            // i_nb.z += fbm(i_nb*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
 
-            pos = mix(pos, neighbor, hash_f());
+            // vec3 neighbor = (i_nb/density).xzy;
+            // pos = (i_pos/density).xzy;
 
-            pos.xz *= rot(-time*.1);
-            pos.yz *= rot(.25);
+            // pos = mix(pos, neighbor, hash_f());
+
+            // pos.xz *= rot(-time*.1);
+            // pos.yz *= rot(.25);
+
+            // vec3 col = vec3(.4,.8,.3);
+            // col = hsv2rgb(col);
+            // store_pixel(proj_p(pos+vec3(0,0,8)), col);
+        // { vertex }
+
+        // { cube }
+            float time = constants.time*.3;
+
+            vec3 v1 = round(hash_v3())*2.-1.;
+            vec3 v2 = round(hash_v3())*2.-1.;
+
+            float amp = sin(time*24.)*.5+.5;
+            v1 += (noise(v1*2.-vec3(time*4.))*2.-1.)*amp;
+            v2 += (noise(v2*2.-vec3(time*4.))*2.-1.)*amp;
+
+            vec3 pos = mix(v1,v2,fract(hash_f()+time));
+
+            pos.zy *= rot(time*.33);
+            pos.zx *= rot(time*.75);
+            pos.xy *= rot(-time);
+            pos.xy *= .5;
 
             vec3 col = vec3(.4,.8,.3);
             col = hsv2rgb(col);
-            store_pixel(proj_p(pos+vec3(0,0,8)), col);
-        // { vertex }
+            store_pixel(proj_p(pos+vec3(0,0,9)), col);
+        // { cube }
     }
 }
