@@ -22,7 +22,8 @@ fn main() {
         ]),
         passes: Vec::from([
             Pass {
-                shader: "src/shaders/main.comp".to_string(),
+                // shader: "src/shaders/main.comp".to_string(),
+                shader: "src/shaders/particle_swim.comp".to_string(),
                 dispatches: DispatchConfig::FullScreen,
                 input_resources: Vec::from([]),
                 output_resources: Vec::from([ 0 ]),
