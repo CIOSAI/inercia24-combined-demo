@@ -202,25 +202,56 @@ void main()
         // { vertex }
 
         // { cube }
+            // float time = constants.time*.3;
+
+            // vec3 v1 = round(hash_v3())*2.-1.;
+            // vec3 v2 = round(hash_v3())*2.-1.;
+
+            // float amp = sin(time*24.)*.5+.5;
+            // v1 += (noise(v1*2.-vec3(time*4.))*2.-1.)*amp;
+            // v2 += (noise(v2*2.-vec3(time*4.))*2.-1.)*amp;
+
+            // vec3 pos = mix(v1,v2,fract(hash_f()+time));
+
+            // pos.zy *= rot(time*.33);
+            // pos.zx *= rot(time*.75);
+            // pos.xy *= rot(-time);
+            // pos.xy *= .5;
+
+            // vec3 col = vec3(.4,.8,.3);
+            // col = hsv2rgb(col);
+            // store_pixel(proj_p(pos+vec3(0,0,9)), col);
+        // { cube }
+
+        // { pipes }
             float time = constants.time*.3;
 
-            vec3 v1 = round(hash_v3())*2.-1.;
-            vec3 v2 = round(hash_v3())*2.-1.;
 
-            float amp = sin(time*24.)*.5+.5;
-            v1 += (noise(v1*2.-vec3(time*4.))*2.-1.)*amp;
-            v2 += (noise(v2*2.-vec3(time*4.))*2.-1.)*amp;
+            vec3 pos = vec3(0);
+            
+            vec3 off = vec3(floor(hash_f()*12.),0,floor(time*16.));
+            vec3 prev = pos;
+            
+            for(int i=0; i<16; i++){
+                if(hash_f()<float(i)/16.){
+                    break;
+                }
 
-            vec3 pos = mix(v1,v2,fract(hash_f()+time));
+                prev = pos;
+                vec3 dir = noise(pos*2.+off);
+                dir = vec3(sign(dir.y-.5))*mix(vec3(1,0,0),mix(vec3(0,1,0),vec3(0,0,1),step(.666,dir.x)),step(.333,dir.x));
+                pos += dir;
+            }
+            pos = mix(prev, pos, fract(hash_f()-time*8.));
 
-            pos.zy *= rot(time*.33);
-            pos.zx *= rot(time*.75);
-            pos.xy *= rot(-time);
-            pos.xy *= .5;
+            pos *= .35;
 
-            vec3 col = vec3(.4,.8,.3);
+            pos.zx *= rot(time*.5);
+            pos.yz *= rot(time*.7);
+
+            vec3 col = vec3(.4,.8-length(pos),.3+length(pos)*.6);
             col = hsv2rgb(col);
             store_pixel(proj_p(pos+vec3(0,0,9)), col);
-        // { cube }
+        // { pipes }
     }
 }
