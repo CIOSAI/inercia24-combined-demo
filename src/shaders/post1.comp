@@ -139,7 +139,7 @@ vec3 samp( vec2 p )
     return read_pixel(ivec2( p*R.y + .5*R ));
 }
 
-vec2 glitcher( vec2 p )
+vec3 glitcher( vec2 p )
 {
     float t = constants.time;
     float density = 4.;
@@ -149,11 +149,13 @@ vec2 glitcher( vec2 p )
          f_uv = fract(p*scale*density);
 
     seed = uint((462.+i_uv.y)*332.+(i_uv.x+325)*38 - t*4.);
-    if(hash_f()<.01){
+
+    float rand = hash_f();
+    if(rand<.01){
         i_uv = floor((hash_v2()*2.-1.)*scale*floor(density*.5));
     }
 
-    return (i_uv+f_uv)/scale/density;
+    return vec3((i_uv+f_uv)/scale/density,rand);
 }
 
 void main()
@@ -169,5 +171,15 @@ void main()
 
     float time = constants.time*2.;
 
-    store_pixel(p, samp(glitcher(uv)));
+    vec3 n_uv = glitcher(uv);
+
+    vec3 col = samp(n_uv.xy);
+    if(n_uv.z>.995){
+        col = 1.-col;
+    }
+    else if(n_uv.z>.99){
+        col.gb = vec2(1);
+    }
+
+    store_pixel(p, col);
 }
