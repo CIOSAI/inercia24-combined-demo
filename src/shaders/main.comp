@@ -231,11 +231,12 @@ float map(vec3 p, float t)
         // p.yz *= rot(t*.7);
         // vec3 q = abs(p);
 
-        // return abs(max(max(q.x,q.y),q.z)-(1.-fract(t))*.2-.3);
+        // return abs(max(max(q.x,q.y),q.z)-.3)*8.;
     // { rotating cube }
 
     // { terraine } 
         p.zy *= rot(.4);
+        p.xz *= rot(.1);
         vec3 q = p*2.+vec3(0,0,t);
         return abs(p.y-.2-noise(q+noise(q)*.5).x*.2);
     // { terraine } 
