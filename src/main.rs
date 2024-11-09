@@ -37,5 +37,20 @@ fn main() {
         ])
     };
 
-    app.run(config, None);
+    fn audio_shader(t:f32) -> (f32, f32) {
+        let tau = 2.0 * std::f32::consts::PI;
+
+        fn pitch(p:f32) -> f32 {
+            return f32::powf(1.059460646483, p+3.) * 440.0;
+        }
+
+        
+        let melody = vec![0.0,3.0,5.0,6.0,7.0,10.0,12.0][((t*7.0) as usize)%7];
+
+        let n = (tau * pitch(melody) * t).sin();
+        // n *= f32::powf((0.5-f32::abs((f32::sin(t)*18.).fract()-0.5))*2.,0.5);
+
+        (n, n)
+    }
+    app.run(config, Option::None);
 }
