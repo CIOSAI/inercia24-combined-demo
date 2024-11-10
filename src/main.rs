@@ -33,13 +33,13 @@ fn main() {
                 output_resources: Vec::from([ 0 ]),
             },
             Pass {
-                shader: "src/shaders/post1.comp".to_string(),
+                shader: "src/shaders/post2.comp".to_string(),
                 dispatches: DispatchConfig::FullScreen,
                 input_resources: Vec::from([ 0 ]),
                 output_resources: Vec::from([ 1 ]),
             },
             Pass {
-                shader: "src/shaders/post2.comp".to_string(),
+                shader: "src/shaders/post1.comp".to_string(),
                 dispatches: DispatchConfig::FullScreen,
                 input_resources: Vec::from([ 1 ]),
                 output_resources: Vec::from([ 2 ]),
