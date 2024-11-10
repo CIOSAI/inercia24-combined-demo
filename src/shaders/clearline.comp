@@ -237,14 +237,14 @@ void main()
             float pattern = hash_f();
             if (pattern<.3){
                 vec3 pos = vec3((hash_f()*2.-1.)*2.,0,0);
-                pos.y = (noise(pos.xxx*8.-time*4.).x*2.-1.)*.5;
+                pos.y = (noise(pos.xxx*4.-time*4.).x*2.-1.)*.5;
                 pos*=.75;
 
                 vec3 col = vec3(.4,.8-length(pos),.3+length(pos)*.2);
                 col = hsv2rgb(col);
                 store_pixel(proj_p(pos+vec3(0,0,8.5)), col);
             }
-            else if(pattern<.4){
+            else if(pattern<.5){
                 vec3 pos = vec3(0);
                 for(int i=0; i<128; i++){
                     float accum = 9999.;
@@ -265,13 +265,13 @@ void main()
                 }
 
                 pos *= .5;
-                pos.xy += vec2(-1.,.6);
+                pos.xy += vec2(-.9,.6);
 
                 vec3 col = vec3(.4,.8-length(pos),.3+length(pos)*.2);
                 col = hsv2rgb(col);
                 store_pixel(proj_p(pos+vec3(0,0,8.5)), col);
             }
-            else if(pattern<.5){
+            else if(pattern<.8){
                 vec3 pos = vec3(hash_f()*2.-1.,hash_f()*2.-1.,0);
                 
                 vec2 ghost = vec2(cos(time*3.),sin(time*4.));
