@@ -136,7 +136,7 @@ vec3 rgb2hsv(vec3 c)
 
 vec3 samp( vec2 p )
 {
-    return read_pixel(ivec2( p*R.y + .5*R ));
+    return read_pixel(ivec2( p*R.y + .5*R + .5 ));
 }
 
 vec3 glitcher( vec2 p )
