@@ -140,12 +140,12 @@ vec3 rgb2hsv(vec3 c)
 
 vec3 samp_in( vec2 p )
 {
-    return read_in_pixel(ivec2( p*R.y + .5*R ));
+    return read_in_pixel(clamp(ivec2( p*R.y + .5*R ),ivec2(0),ivec2(R-1)));
 }
 
 vec3 samp_self( vec2 p )
 {
-    return read_self_pixel(ivec2( p*R.y + .5*R ));
+    return read_self_pixel(clamp(ivec2( p*R.y + .5*R ),ivec2(0),ivec2(R-1)));
 }
 
 void main()
@@ -159,9 +159,21 @@ void main()
 
     vec2 uv = (vec2(p) - .5*R)/R.y;
 
-    float time = constants.time*2.;
+    float time = constants.time*1.;
 
-    vec3 col = mix(samp_self(uv.xy),samp_in(uv.xy),sin(time)*.5+.5);
+    vec3 oldf = samp_self(uv);
+    vec3 newf = samp_in(uv);
+    vec3 col = mix(oldf,newf,step(.9,fract(time)));
+    
+    vec3 rand = noise(floor(vec3(uv*4.,time)));
+
+    if(rand.x<.01){
+        vec2 off = rand.yz*2.-1.;
+        col = samp_self(uv-off*.01);
+    }
+    else{
+        col = newf;
+    }
 
     store_pixel(p, col);
 }
