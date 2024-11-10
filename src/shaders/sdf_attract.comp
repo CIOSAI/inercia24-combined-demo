@@ -235,11 +235,20 @@ float map(vec3 p, float t)
     // { rotating cube }
 
     // { terraine } 
-        p.zy *= rot(.4);
-        p.xz *= rot(.1);
-        vec3 q = p*2.+vec3(0,0,t);
-        return abs(p.y-.2-noise(q+noise(q)*.5).x*.2);
+        // p.zy *= rot(.4);
+        // p.xz *= rot(.1);
+        // vec3 q = p*2.+vec3(0,0,t);
+        // return abs(p.y-.2-noise(q+noise(q)*.5).x*.2);
     // { terraine } 
+
+    // { wave_interference }
+        float acc = 0.;
+        for(int i=0; i<3; i++){
+            vec2 off = noise(vec3(float(i),t*.1,t*.1)).xz*2.-1.;
+            acc += sin(length(p.xy-off)*6.);
+        }
+        return acc+3.;
+    // { wave_interference }
 }
 
 vec3 nor(vec3 p, float t)

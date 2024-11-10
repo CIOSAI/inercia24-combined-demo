@@ -22,9 +22,9 @@ fn main() {
         ]),
         passes: Vec::from([
             Pass {
-                // shader: "src/shaders/sdf_attract.comp".to_string(),
+                shader: "src/shaders/sdf_attract.comp".to_string(),
                 // shader: "src/shaders/particle_swim.comp".to_string(),
-                shader: "src/shaders/clearline.comp".to_string(),
+                // shader: "src/shaders/clearline.comp".to_string(),
                 dispatches: DispatchConfig::FullScreen,
                 input_resources: Vec::from([]),
                 output_resources: Vec::from([ 0 ]),
