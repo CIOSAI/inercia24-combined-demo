@@ -211,18 +211,18 @@ float letter(vec3 p, int ascii)
 float map(vec3 p, float t)
 {
     // { CIOSAI letters }
-        // p.xy *= rot(sin(t*.3)*.5);
-        // p.zx *= rot(cos(t*.5)*.5);
-        // p.yz *= rot(sin(t*.7));
-        // vec3 q = p*8.;
+        p.xy *= rot(sin(t*.3)*.5);
+        p.zx *= rot(cos(t*.5)*.5);
+        p.yz *= rot(sin(t*.7));
+        vec3 q = p*8.;
 
-        // float accum = 9999.;
-        // int text[] = {67,73,79,83,65,73};
-        // for(int i=0; i<6; i++){
-        //     vec3 off = vec3((float(i)-2.5)*3.,0,0);
-        //     accum = min(accum,abs(letter(q-off, text[i])-.2));
-        // }
-        // return accum*.4;
+        float accum = 9999.;
+        int text[] = {67,73,79,83,65,73};
+        for(int i=0; i<6; i++){
+            vec3 off = vec3((float(i)-2.5)*3.,0,0);
+            accum = min(accum,abs(letter(q-off, text[i])-.2));
+        }
+        return accum*.4;
     // { CIOSAI letters }
 
     // { rotating cube }
@@ -242,12 +242,12 @@ float map(vec3 p, float t)
     // { terraine } 
 
     // { wave_interference }
-        float acc = 0.;
-        for(int i=0; i<3; i++){
-            vec2 off = noise(vec3(float(i),t*.1,t*.1)).xz*2.-1.;
-            acc += sin(length(p.xy-off)*6.);
-        }
-        return acc+3.;
+        // float acc = 0.;
+        // for(int i=0; i<3; i++){
+        //     vec2 off = noise(vec3(float(i),t*.1,t*.1)).xz*2.-1.;
+        //     acc += sin(length(p.xy-off)*6.);
+        // }
+        // return acc+3.;
     // { wave_interference }
 }
 
@@ -271,7 +271,7 @@ void main()
 
     float time = constants.time*2.;
 
-    if( p.x < 100 ){
+    if( p.x < 100 *0 ){
         seed = uint(p.y*R.x+p.x);
         vec3 pos = (hash_v3()*2.-1.)*2.;
         for(int i=0; i<100; i++){
