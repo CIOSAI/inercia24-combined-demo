@@ -1,6 +1,7 @@
 use cen::app::app::AppConfig;
 use kiyo::app::App;
 use kiyo::app::draw_orch::{ClearConfig, DispatchConfig, DrawConfig, ImageConfig, Pass};
+use std::process::Command;
 
 fn main() {
 
@@ -57,20 +58,12 @@ fn main() {
         ])
     };
 
-    fn audio_shader(t:f32) -> (f32, f32) {
-        let tau = 2.0 * std::f32::consts::PI;
+    let mut p = Command::new("src/music/symphonia-play.exe")
+        .arg("src/music/inercia-jy-24.mp3")
+        .spawn()
+        .expect("symphonia failed");
 
-        fn pitch(p:f32) -> f32 {
-            return f32::powf(1.059460646483, p+3.) * 440.0;
-        }
-
-        
-        let melody = vec![0.0,3.0,5.0,6.0,7.0,10.0,12.0][((t*7.0) as usize)%7];
-
-        let n = (tau * pitch(melody) * t).sin();
-        // n *= f32::powf((0.5-f32::abs((f32::sin(t)*18.).fract()-0.5))*2.,0.5);
-
-        (n, n)
-    }
     app.run(config, Option::None);
+
+    _ = p.kill();
 }
