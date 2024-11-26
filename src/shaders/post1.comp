@@ -173,7 +173,7 @@ void main()
 
     vec3 n_uv = glitcher(uv);
 
-    vec3 col = samp(n_uv.xy);
+    vec3 col = 1.-samp(n_uv.xy);
     if(n_uv.z>.995){
         col = 1.-col;
     }
