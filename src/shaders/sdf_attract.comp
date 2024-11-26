@@ -18,6 +18,15 @@ layout( push_constant ) uniform PushConstants
  * User data
  */
 
+#define BPM 116.0
+#define syncT (constants.time/(60.0/BPM))
+#define BELL_IN 32.0
+#define DROP_1 64.0
+#define PAD_IN 128.0
+#define PERC_IN 160.0
+#define DROP_2 192.0
+#define OUTRO 256.0
+
 #define R vec2(imageSize( images[ constants.out_image ] ))
 
 #define pi acos(-1.)
@@ -269,21 +278,19 @@ void main()
 
     vec2 uv = (vec2(p) - .5*R)/R.y;
 
-    float time = constants.time*2.;
-
-    if( p.x < 100 *0 ){
+    if( p.x < 100 ){
         seed = uint(p.y*R.x+p.x);
         vec3 pos = (hash_v3()*2.-1.)*2.;
         for(int i=0; i<100; i++){
-            if(map(pos,time)<.75) { break; }
+            if(map(pos,syncT)<.75) { break; }
             pos = (hash_v3()*2.-1.)*2.;
         }
         
         for(int i=0; i<50; i++)
         {
-            float d = map(pos,time)*.3;
+            float d = map(pos,syncT)*.3;
             if (d<.001) { break; }
-            pos += nor(pos,time)*d;
+            pos += nor(pos,syncT)*d;
             float perc = float(i)/50.0;
             vec3 col = vec3(float(i)*.01+.4,d*.2+.8,pow(d,5.)+.3);
             col = hsv2rgb(col);
