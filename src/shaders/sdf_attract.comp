@@ -220,18 +220,63 @@ float letter(vec3 p, int ascii)
 float map(vec3 p, float t)
 {
     // { CIOSAI letters }
-        p.xy *= rot(sin(t*.3)*.5);
-        p.zx *= rot(cos(t*.5)*.5);
-        p.yz *= rot(sin(t*.7));
-        vec3 q = p*8.;
+    if(syncT>=DROP_1 && syncT<PAD_IN)
+        {
+        float innerT = (syncT-DROP_1)/(PAD_IN-DROP_1);
+
+        float mul = 10.;
+
+        if(innerT<.25){
+            float i_t = floor(t);
+            float f_t = fract(t);
+            f_t = sin(f_t*pi-pi/2.)*.5+.5;
+            float n_t = (i_t+f_t);
+            p.xy *= rot(sin(n_t*.3)*.1);
+            p.zx *= rot(cos(n_t*.5)*.25);
+            p.yz *= rot(sin(n_t*.7)*.25);
+            mul = 8.;
+        }
+        else if(innerT<.5){
+            float n_t = fract(innerT*4.);
+            n_t = pow(n_t,.3);
+            n_t = 1.-n_t;
+            p.xy *= rot(n_t*2.7);
+            p.zx *= rot(n_t*7.);
+            p.yz *= rot(n_t*3.65);
+            mul = 10.;
+        }
+        else if(innerT<.75){
+            p.xy *= rot(sin(t*.3)*.1);
+            p.zx *= rot(cos(t*.5)*.1);
+            p.yz *= rot(sin(t*.7)*.1);
+            mul = 10.;
+        }
+        else{
+            float n_t = fract(innerT*4.);
+            float amp = (1.-pow(n_t,1.5))*.8;
+            p.xy *= rot(sin(t*.3)*amp);
+            p.zx *= rot(cos(t*.5)*amp);
+            p.yz *= rot(sin(t*.7)*amp);
+            mul = mix(4.,10.,pow(n_t,.4));
+        }
+
+        vec3 q = p*mul;
 
         float accum = 9999.;
-        int text[] = {67,73,79,83,65,73};
-        for(int i=0; i<6; i++){
-            vec3 off = vec3((float(i)-2.5)*3.,0,0);
-            accum = min(accum,abs(letter(q-off, text[i])-.2));
+        int text[] = {
+            0 ,0 ,79,76,65,0 ,0 ,0 ,
+            73,78,69,82,67,73,65,0 ,
+            0 ,0 ,50,48,50,52,0 ,0 ,
+            84,85,68,79,0 ,66,69,77,
+        };
+        for(int i=0; i<8; i++){
+            int ch = text[i + 8*int(innerT*4.)];
+            if(ch==0){ continue; }
+            vec3 off = vec3((float(i)-3.5)*3.,0,0);
+            accum = min(accum,abs(letter(q-off, ch)-.2));
         }
         return accum*.4;
+        }
     // { CIOSAI letters }
 
     // { rotating cube }
@@ -258,6 +303,8 @@ float map(vec3 p, float t)
         // }
         // return acc+3.;
     // { wave_interference }
+
+    return 0.;
 }
 
 vec3 nor(vec3 p, float t)

@@ -151,7 +151,7 @@ vec3 glitcher( vec2 p )
     vec2 i_uv = floor(p*scale*density),
          f_uv = fract(p*scale*density);
 
-    seed = uint((462.+i_uv.y)*332.+(i_uv.x+325)*38 - t*4.);
+    seed = uint((462.+i_uv.y)*332.+(i_uv.x+325)*38 - t);
 
     float rand = hash_f();
     if(rand<.01){
@@ -177,10 +177,10 @@ void main()
     vec3 n_uv = glitcher(uv);
 
     vec3 col = 1.-samp(n_uv.xy);
-    if(n_uv.z>.995){
+    if(n_uv.z>.9999){
         col = 1.-col;
     }
-    else if(n_uv.z>.99){
+    else if(n_uv.z>.9995){
         col.gb = vec2(1);
     }
 

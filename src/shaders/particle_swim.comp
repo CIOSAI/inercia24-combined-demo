@@ -163,10 +163,46 @@ void main()
 
     vec2 uv = (vec2(p) - .5*R)/R.y;
 
-    if( p.x < 100 *0 ){
+    if( p.x < 100 ){
         seed = uint(p.y*R.x+p.x);
 
+        // { vertex }
+        if( syncT < DROP_1 )
+            {
+            float time = syncT*.25;
+            vec3 pos = vec3(hash_v2()*2.-1.,1.);
+
+            float density = mix(9.,3., mix(sin(pi*syncT/BELL_IN - pi/2.)*.5+.5, 1., step(BELL_IN, syncT)) );
+
+            pos.xy *= 2.;
+            vec3 i_pos=vec3(round(pos.xy*density),pos.z);
+            vec3 i_nb=i_pos;
+            i_nb.xy += vec2(step(.5, hash_f()), step(.5, hash_f()));
+
+            float noise_freq = .1;
+            float wave_speed = 1.;
+            float wave_amp = 12.;
+
+            i_pos.z += fbm(i_pos*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
+            i_nb.z += fbm(i_nb*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
+
+            vec3 neighbor = (i_nb/density).xzy;
+            pos = (i_pos/density).xzy;
+
+            pos = mix(pos, neighbor, hash_f());
+
+            pos.xz *= rot(-time*.1);
+            pos.yz *= rot(.25);
+
+            vec3 col = vec3(.4,.8,.3);
+            col = hsv2rgb(col);
+            store_pixel(proj_p(pos+vec3(0,0,8)), col);
+            }
+        // { vertex }
+
         // { morphing astroid }
+        if(BELL_IN<=syncT && syncT<DROP_1)
+            {
             float time = syncT*.25;
             float ang = hash_f()*pi-pi/2.;
             vec3 pos = vec3(cos(ang),sin(ang),0);
@@ -176,38 +212,8 @@ void main()
             vec3 col = vec3(.4,.8,.3);
             col = hsv2rgb(col);
             store_pixel(proj_p(pos+vec3(0,0,8)), col);
+            }
         // { morphing astroid }
-
-        // { vertex }
-            // float time = syncT*.25;
-            // vec3 pos = vec3(hash_v2()*2.-1.,1.);
-
-            // float density = 3.;
-
-            // pos.xy *= 2.;
-            // vec3 i_pos=vec3(round(pos.xy*density),pos.z);
-            // vec3 i_nb=i_pos;
-            // i_nb.xy += vec2(step(.5, hash_f()), step(.5, hash_f()));
-
-            // float noise_freq = .1;
-            // float wave_speed = 1.;
-            // float wave_amp = 12.;
-
-            // i_pos.z += fbm(i_pos*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
-            // i_nb.z += fbm(i_nb*vec3(1,1,0)*noise_freq-vec3(time,0,0)*wave_speed).x*wave_amp;
-
-            // vec3 neighbor = (i_nb/density).xzy;
-            // pos = (i_pos/density).xzy;
-
-            // pos = mix(pos, neighbor, hash_f());
-
-            // pos.xz *= rot(-time*.1);
-            // pos.yz *= rot(.25);
-
-            // vec3 col = vec3(.4,.8,.3);
-            // col = hsv2rgb(col);
-            // store_pixel(proj_p(pos+vec3(0,0,8)), col);
-        // { vertex }
 
         // { cube }
             // float time = syncT;
