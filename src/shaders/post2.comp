@@ -18,6 +18,9 @@ layout( push_constant ) uniform PushConstants
  * User data
  */
 
+#define BPM 116.0
+#define syncT (constants.time/(60.0/BPM))
+
 #define R vec2(imageSize( images[ constants.out_image ] ))
 
 #define pi acos(-1.)
@@ -159,7 +162,7 @@ void main()
 
     vec2 uv = (vec2(p) - .5*R)/R.y;
 
-    float time = constants.time*1.;
+    float time = syncT*.5;
 
     vec3 oldf = samp_self(uv);
     vec3 newf = samp_in(uv);

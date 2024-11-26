@@ -18,6 +18,9 @@ layout( push_constant ) uniform PushConstants
  * User data
  */
 
+#define BPM 116.0
+#define syncT (constants.time/(60.0/BPM))
+
 #define R vec2(imageSize( images[ constants.out_image ] ))
 
 #define pi acos(-1.)
@@ -141,7 +144,7 @@ vec3 samp( vec2 p )
 
 vec3 glitcher( vec2 p )
 {
-    float t = constants.time;
+    float t = syncT;
     float density = 4.;
     vec2 scale = vec2(1,4);
 
@@ -169,7 +172,7 @@ void main()
 
     vec2 uv = (vec2(p) - .5*R)/R.y;
 
-    float time = constants.time*2.;
+    float time = syncT;
 
     vec3 n_uv = glitcher(uv);
 
