@@ -296,12 +296,15 @@ float map(vec3 p, float t)
     // { terraine } 
 
     // { wave_interference }
-        // float acc = 0.;
-        // for(int i=0; i<3; i++){
-        //     vec2 off = noise(vec3(float(i),t*.1,t*.1)).xz*2.-1.;
-        //     acc += sin(length(p.xy-off)*6.);
-        // }
-        // return acc+3.;
+    if(syncT>=PAD_IN && syncT<DROP_2)
+        {
+        float acc = 0.;
+        for(int i=0; i<3; i++){
+            vec2 off = noise(vec3(float(i),t*.1,t*.1)).xz*2.-1.;
+            acc += sin(length(p.xy-off)*6.);
+        }
+        return acc+3.;
+        }
     // { wave_interference }
 
     return 0.;
