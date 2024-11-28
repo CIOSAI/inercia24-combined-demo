@@ -2,7 +2,6 @@ use kiyo::app::app::AppConfig;
 use kiyo::app::App;
 use kiyo::app::draw_orch::{ClearConfig, DispatchConfig, DrawConfig, ImageConfig, Pass};
 use kiyo::app::audio_orch::{AudioConfig};
-use std::process::Command;
 
 fn main() {
 
