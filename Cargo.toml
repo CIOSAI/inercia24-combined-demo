@@ -7,5 +7,5 @@ edition = "2021"
 
 [dependencies]
 
-kiyo = { git = "https://github.com/angelocarly/kiyo.git" }
-cen = "0.0.3"
+kiyo = { git = "https://github.com/CIOSAI/kiyo.git" }
+cen = { git = "https://github.com/angelocarly/cen.git" }

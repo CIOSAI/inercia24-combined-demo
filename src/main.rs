@@ -1,16 +1,28 @@
-use cen::app::app::AppConfig;
+use kiyo::app::app::AppConfig;
 use kiyo::app::App;
 use kiyo::app::draw_orch::{ClearConfig, DispatchConfig, DrawConfig, ImageConfig, Pass};
+use kiyo::app::audio_orch::{AudioConfig};
 use std::process::Command;
 
 fn main() {
 
-    let app = App::new(AppConfig {
+    const DEV:bool = true;
+
+    let dev_cfg = AppConfig {
         width: 1920 / 2,
         height: 1080 / 2,
         vsync: true,
         log_fps: false,
-    });
+        fullscreen: false,
+    };
+
+    let prod_cfg = AppConfig {
+        width: 1920,
+        height: 1080,
+        vsync: true,
+        log_fps: false,
+        fullscreen: true,
+    };
 
     let config = DrawConfig {
         images: Vec::from([
@@ -58,12 +70,5 @@ fn main() {
         ])
     };
 
-    let mut p = Command::new("src/music/symphonia-play.exe")
-        .arg("src/music/inercia-jy-24.mp3")
-        .spawn()
-        .expect("symphonia failed");
-
-    app.run(config, Option::None);
-
-    _ = p.kill();
+    App::run(if DEV { dev_cfg } else { prod_cfg }, config, AudioConfig::AudioFile("src/music/inercia-jy-24.mp3".to_string()));
 }
