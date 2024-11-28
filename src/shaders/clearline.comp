@@ -267,6 +267,10 @@ int name_list[] = {
 };
 int name_list_length = 4*7 + 3;
 
+float bump(float n) {
+    return n<0.?0.:exp(-n);
+}
+
 void main()
 {
     ivec2 p = ivec2( gl_GlobalInvocationID.xy );
@@ -284,7 +288,9 @@ void main()
         // { planets }
         if(syncT>=DROP_2 && syncT<DROP_2+(OUTRO-DROP_2)*.5)
             {
-            float time = syncT*.25;
+            float snare = fract(syncT/4.);
+            snare = bump((snare-2./8.)*12.)+bump((snare-5./8.)*12.);
+            float time = syncT*.25 + 100.;
             vec3 pos = vec3(0);
             float pattern = hash_f();
             if(pattern<.5){
@@ -292,6 +298,7 @@ void main()
                 n *= 1.;
                 pos = vec3(cos(n),sin(n),noise(vec3(n)).y*2.-1.);
                 pos.xy *= sin(n*(1.+noise(vec3(n*.2)).x*.1));
+                pos.xy *= 1.+snare*.65;
             }
             else if(pattern<.7){
                 vec3 pos = vec3(0);
