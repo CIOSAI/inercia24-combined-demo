@@ -205,10 +205,11 @@ void main()
         if(BELL_IN<=syncT && syncT<DROP_1)
             {
             float time = syncT*.25;
+            float perc = (syncT-BELL_IN)/(DROP_1-BELL_IN);
             float ang = hash_f()*pi-pi/2.;
             vec3 pos = vec3(cos(ang),sin(ang),0);
             pos.xz *= rot(hash_f()*tau-time);
-            pos *= mix(1.,.7,noise(pos*2.+vec3(0,0,time)).x);
+            pos *= mix(1.,mix(.1,.7,pow(perc,.2)),noise(pos*mix(8.,2.,pow(perc,.8))+vec3(0,0,time)).x);
             
             vec3 col = vec3(.4,.8,.3);
             col = hsv2rgb(col);
@@ -220,6 +221,7 @@ void main()
         if(syncT>=OUTRO && syncT<OUTRO+(END-OUTRO)*.5)
             {
             float time = syncT*.25;
+            float perc = (syncT-OUTRO)/(mix(OUTRO, END, .5)-OUTRO);
 
             vec3 v1 = round(hash_v3())*2.-1.;
             vec3 v2 = round(hash_v3())*2.-1.;
@@ -227,6 +229,9 @@ void main()
             float amp = mix(.1,.9,noise(vec3(time)).x);
             v1 += (noise(v1*2.-vec3(time*.5))*2.-1.)*amp;
             v2 += (noise(v2*2.-vec3(time*.5))*2.-1.)*amp;
+
+            v1 *= pow(1.-perc,.66);
+            v2 *= pow(1.-perc,.66);
 
             vec3 pos = mix(v1,v2,fract(hash_f()+time));
 

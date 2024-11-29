@@ -232,13 +232,15 @@ float map(vec3 p, float t)
         float mul = 10.;
 
         if(innerT<.25){
-            float i_t = floor(t);
-            float f_t = fract(t);
+            float t_end = (PAD_IN-DROP_1)/4.;
+            float my_t = t-DROP_1;
+            float i_t = floor(my_t);
+            float f_t = fract(my_t);
             f_t = sin(f_t*pi-pi/2.)*.5+.5;
             float n_t = (i_t+f_t);
-            p.xy *= rot(sin(n_t*.3)*.1);
-            p.zx *= rot(cos(n_t*.5)*.25);
-            p.yz *= rot(sin(n_t*.7)*.25);
+            p.xy *= rot(sin(n_t*.3)*.1 - pow(t_end-n_t,2.)*.06);
+            p.zx *= rot(cos(n_t*.5)*.25 - pow(t_end-n_t,2.)*.055);
+            p.yz *= rot(sin(n_t*.7)*.25 - pow(t_end-n_t,2.)*.012);
             mul = 8.;
         }
         else if(innerT<.5){
@@ -251,7 +253,12 @@ float map(vec3 p, float t)
             mul = 10.;
         }
         else if(innerT<.75){
-            p.xy *= rot(sin(t*.3)*.1);
+            float n_t = fract(innerT*4.);
+            n_t = pow(n_t,.3);
+            n_t = 1.-n_t;
+            float snare = fract(syncT/4.);
+            snare = bump((snare-2./8.)*6.)+bump((snare-5./8.)*6.);
+            p.xy *= rot(sin(t*.3)*.1 + snare*.5 + n_t);
             p.zx *= rot(cos(t*.5)*.1);
             p.yz *= rot(sin(t*.7)*.1);
             mul = 10.;
@@ -342,7 +349,8 @@ void main()
 
     vec2 uv = (vec2(p) - .5*R)/R.y;
 
-    if( p.x < 100 ){
+    float outro_perc2 = (syncT-mix(OUTRO,END,.5))/((END-OUTRO)*.5);
+    if( p.x < int(100. * mix(1.,(1.-outro_perc2),step(mix(OUTRO,END,.5),syncT))) ){
         seed = uint(p.y*R.x+p.x);
         vec3 pos = (hash_v3()*2.-1.)*2.;
         for(int i=0; i<100; i++){

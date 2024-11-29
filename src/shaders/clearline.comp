@@ -332,6 +332,9 @@ void main()
                 float n = hash_f()*tau;
                 pos.xy = vec2(cos(n),sin(n));
 
+                float perc = (syncT-DROP_2)/(mix(OUTRO,DROP_2,.5)-DROP_2);
+                pos.z += sin(floor(n*8.+time*4.))*.2*step(.5,perc);
+
                 float t = time*5.;
                 pos.xz *= rot(t*.31);
                 pos.yz *= rot(t*.47);
@@ -350,8 +353,9 @@ void main()
 
             float pattern = hash_f();
             if (pattern<.3){
+                float perc = (syncT-PERC_IN)/(DROP_2-PERC_IN);
                 vec3 pos = vec3((hash_f()*2.-1.)*2.,0,0);
-                pos.y = (noise(pos.xxx*4.-time*4.).x*2.-1.)*.5;
+                pos.y = (noise(pos.xxx*4.-time*4.).x*2.-1.)*mix(.1,.5,perc);
                 pos*=.75;
 
                 vec3 col = vec3(.4,.8-length(pos),.3+length(pos)*.2);
@@ -389,7 +393,7 @@ void main()
                 vec3 pos = vec3(hash_f()*2.-1.,hash_f()*2.-1.,0);
                 
                 vec2 ghost = vec2(cos(time*3.),sin(time*4.));
-                if(hash_f()<.2){
+                if(hash_f()<.8){
                     pos.xy = mix(pos.xy,ghost,.9);
                 }
 
@@ -444,8 +448,8 @@ void main()
             {
             float time = syncT*.25;
             float snare = fract(syncT/4.);
-            snare = bump((snare-2./8.)*6.)+bump((snare-5./8.)*6.);
-            time += snare*.125;
+            snare = bump((snare-2./8.)*3.)+bump((snare-5./8.)*3.);
+            time += snare/16.;
             
             vec3 pos = vec3(0);
             float ang = hash_f()*tau;
