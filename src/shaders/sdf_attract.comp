@@ -26,6 +26,7 @@ layout( push_constant ) uniform PushConstants
 #define PERC_IN 160.0
 #define DROP_2 192.0
 #define OUTRO 256.0
+#define END 320.0
 
 #define R vec2(imageSize( images[ constants.out_image ] ))
 
@@ -217,6 +218,10 @@ float letter(vec3 p, int ascii)
     return accum;
 }
 
+float bump(float n) {
+    return n<0.?0.:exp(-n);
+}
+
 float map(vec3 p, float t)
 {
     // { CIOSAI letters }
@@ -280,19 +285,28 @@ float map(vec3 p, float t)
     // { CIOSAI letters }
 
     // { rotating cube }
-        // p.xy *= rot(t*.3);
-        // p.zx *= rot(t*.5);
-        // p.yz *= rot(t*.7);
-        // vec3 q = abs(p);
+    if(syncT>=DROP_2+(OUTRO-DROP_2)*.5 && syncT<DROP_2+(OUTRO-DROP_2)*.75)
+        {
+        float snare = fract(syncT/4.);
+        snare = bump((snare-2./8.)*12.)+bump((snare-5./8.)*12.);
 
-        // return abs(max(max(q.x,q.y),q.z)-.3)*8.;
+        p.xy *= rot(t*.3);
+        p.zx *= rot(t*.5);
+        p.yz *= rot(t*.7);
+        vec3 q = abs(p);
+
+        return abs(max(max(q.x,q.y),q.z)-.3)*mix(8.,6.,snare);
+        }
     // { rotating cube }
 
     // { terraine } 
-        // p.zy *= rot(.4);
-        // p.xz *= rot(.1);
-        // vec3 q = p*2.+vec3(0,0,t);
-        // return abs(p.y-.2-noise(q+noise(q)*.5).x*.2);
+    if(syncT>=OUTRO)
+        {
+        p.zy *= rot(.4);
+        p.xz *= rot(.1);
+        vec3 q = p*2.+vec3(0,0,t);
+        return abs(p.y-.2-noise(q+noise(q)*.5).x*.2);
+        }
     // { terraine } 
 
     // { wave_interference }

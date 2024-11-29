@@ -25,6 +25,7 @@ layout( push_constant ) uniform PushConstants
 #define PERC_IN 160.0
 #define DROP_2 192.0
 #define OUTRO 256.0
+#define END 320.0
 
 #define R vec2(imageSize( images[ constants.out_image ] ))
 
@@ -216,56 +217,62 @@ void main()
         // { morphing astroid }
 
         // { cube }
-            // float time = syncT;
+        if(syncT>=OUTRO && syncT<OUTRO+(END-OUTRO)*.5)
+            {
+            float time = syncT*.25;
 
-            // vec3 v1 = round(hash_v3())*2.-1.;
-            // vec3 v2 = round(hash_v3())*2.-1.;
+            vec3 v1 = round(hash_v3())*2.-1.;
+            vec3 v2 = round(hash_v3())*2.-1.;
 
-            // float amp = sin(time*3.)*.5+.5;
-            // v1 += (noise(v1*2.-vec3(time*.5))*2.-1.)*amp;
-            // v2 += (noise(v2*2.-vec3(time*.5))*2.-1.)*amp;
+            float amp = mix(.1,.9,noise(vec3(time)).x);
+            v1 += (noise(v1*2.-vec3(time*.5))*2.-1.)*amp;
+            v2 += (noise(v2*2.-vec3(time*.5))*2.-1.)*amp;
 
-            // vec3 pos = mix(v1,v2,fract(hash_f()+time));
+            vec3 pos = mix(v1,v2,fract(hash_f()+time));
 
-            // pos.zy *= rot(time*.33);
-            // pos.zx *= rot(time*.75);
-            // pos.xy *= rot(-time);
-            // pos.xy *= .5;
+            pos.zy *= rot(time*.33);
+            pos.zx *= rot(time*.75);
+            pos.xy *= rot(-time);
+            pos.xy *= .5;
 
-            // vec3 col = vec3(.4,.8,.3);
-            // col = hsv2rgb(col);
-            // store_pixel(proj_p(pos+vec3(0,0,9)), col);
+            vec3 col = vec3(.4,.8,.3);
+            col = hsv2rgb(col);
+            store_pixel(proj_p(pos+vec3(0,0,9)), col);
+            }
         // { cube }
 
         // { pipes }
-            // float time = syncT*.125;
+        if(syncT>=DROP_2+(OUTRO-DROP_2)*.5 && syncT<OUTRO && mod(syncT/4.,2.)<.5)
+            {
+            float time = syncT*.125;
 
 
-            // vec3 pos = vec3(0);
+            vec3 pos = vec3(0);
             
-            // vec3 off = vec3(floor(hash_f()*12.),0,floor(time*16.));
-            // vec3 prev = pos;
+            vec3 off = vec3(floor(hash_f()*12.),0,floor(time*16.));
+            vec3 prev = pos;
             
-            // for(int i=0; i<16; i++){
-            //     if(hash_f()<float(i)/16.){
-            //         break;
-            //     }
+            for(int i=0; i<16; i++){
+                if(hash_f()<float(i)/16.){
+                    break;
+                }
 
-            //     prev = pos;
-            //     vec3 dir = noise(pos*2.+off);
-            //     dir = vec3(sign(dir.y-.5))*mix(vec3(1,0,0),mix(vec3(0,1,0),vec3(0,0,1),step(.666,dir.x)),step(.333,dir.x));
-            //     pos += dir;
-            // }
-            // pos = mix(prev, pos, fract(hash_f()-time*8.));
+                prev = pos;
+                vec3 dir = noise(pos*2.+off);
+                dir = vec3(sign(dir.y-.5))*mix(vec3(1,0,0),mix(vec3(0,1,0),vec3(0,0,1),step(.666,dir.x)),step(.333,dir.x));
+                pos += dir;
+            }
+            pos = mix(prev, pos, fract(hash_f()-time*8.));
 
-            // pos *= .35;
+            pos *= .35;
 
-            // pos.zx *= rot(time*.5);
-            // pos.yz *= rot(time*.7);
+            pos.zx *= rot(time*.5);
+            pos.yz *= rot(time*.7);
 
-            // vec3 col = vec3(.4,.8-length(pos),.3+length(pos)*.6);
-            // col = hsv2rgb(col);
-            // store_pixel(proj_p(pos+vec3(0,0,9)), col);
+            vec3 col = vec3(.4,.8-length(pos),.3+length(pos)*.6);
+            col = hsv2rgb(col);
+            store_pixel(proj_p(pos+vec3(0,0,9)), col);
+            }
         // { pipes }
     }
 }
