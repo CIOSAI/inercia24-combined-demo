@@ -5,6 +5,7 @@
  * - WORKGROUP_SIZE and NUM_IMAGES are provided by the engine
  */
 
+//[
 layout ( local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1 ) in;
 layout( binding = 0, rgba8 ) uniform image2D images[NUM_IMAGES];
 layout( push_constant ) uniform PushConstants
@@ -13,6 +14,7 @@ layout( push_constant ) uniform PushConstants
     int in_image;
     int out_image;
 } constants;
+//]
 
 /*
  * User data
@@ -155,17 +157,17 @@ vec3 glitcher( vec2 p )
     float density = 4.;
     vec2 scale = vec2(1,4);
 
-    vec2 i_uv = floor(p*scale*density),
+    vec2 j_uv = floor(p*scale*density),
          f_uv = fract(p*scale*density);
 
-    seed = uint((462.+i_uv.y)*332.+(i_uv.x+325)*38 - t);
+    seed = uint((462.+j_uv.y)*332.+(j_uv.x+325)*38 - t);
 
     float rand = hash_f();
     if(rand<.01){
-        i_uv = floor((hash_v2()*2.-1.)*scale*floor(density*.5));
+        j_uv = floor((hash_v2()*2.-1.)*scale*floor(density*.5));
     }
 
-    return vec3((i_uv+f_uv)/scale/density,rand);
+    return vec3((j_uv+f_uv)/scale/density,rand);
 }
 
 void main()

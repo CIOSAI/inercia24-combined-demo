@@ -5,6 +5,7 @@
  * - WORKGROUP_SIZE and NUM_IMAGES are provided by the engine
  */
 
+//[
 layout ( local_size_x = WORKGROUP_SIZE, local_size_y = WORKGROUP_SIZE, local_size_z = 1 ) in;
 layout( binding = 0, rgba8 ) uniform image2D images[NUM_IMAGES];
 layout( push_constant ) uniform PushConstants
@@ -13,6 +14,7 @@ layout( push_constant ) uniform PushConstants
     int in_image;
     int out_image;
 } constants;
+//]
 
 /*
  * User data
@@ -275,12 +277,12 @@ float map(vec3 p, float t)
         vec3 q = p*mul;
 
         float accum = 9999.;
-        int text[] = {
+        int[32] text = int[](
             0 ,0 ,79,76,65,0 ,0 ,0 ,
             73,78,69,82,67,73,65,0 ,
             0 ,0 ,50,48,50,52,0 ,0 ,
-            84,85,68,79,0 ,66,69,77,
-        };
+            84,85,68,79,0 ,66,69,77
+        );
         for(int i=0; i<8; i++){
             int ch = text[i + 8*int(innerT*4.)];
             if(ch==0){ continue; }
