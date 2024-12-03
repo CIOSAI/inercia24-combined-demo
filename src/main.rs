@@ -5,7 +5,7 @@ use kiyo::app::audio_orch::{AudioConfig};
 
 fn main() {
 
-    const DEV:bool = false;
+    const DEV:bool = true;
 
     let dev_cfg = AppConfig {
         width: 1920 / 2,

@@ -309,24 +309,27 @@ float map(vec3 p, float t)
     // { rotating cube }
 
     // { terraine } 
+    // if(1==1)
     if(syncT>=OUTRO)
         {
         p.zy *= rot(.4);
         p.xz *= rot(.1);
         vec3 q = p*2.+vec3(0,0,t);
-        return abs(p.y-.2-noise(q+noise(q)*.5).x*.2);
+        return abs(p.y-.2-noise(q+noise(q)*.5).x*.4)*3.;
         }
     // { terraine } 
 
     // { wave_interference }
+    // if(syncT<DROP_2)
     if(syncT>=PAD_IN && syncT<DROP_2)
         {
+        float perc = (syncT-PAD_IN)/(DROP_2-PAD_IN);
         float acc = 0.;
         for(int i=0; i<3; i++){
             vec2 off = noise(vec3(float(i),t*.1,t*.1)).xz*2.-1.;
             acc += sin(length(p.xy-off)*6.);
         }
-        return acc+3.;
+        return acc*.6+mix(2.,-.7,smoothstep(.4,.6,perc));
         }
     // { wave_interference }
 
